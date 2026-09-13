@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Como funciona o play-api</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f7fb; color: #172b43; font: 17px/1.6 system-ui, sans-serif; }
+    main { max-width: 880px; margin: auto; padding: 36px 20px; }
+    h1 { font-size: clamp(28px, 5vw, 42px); line-height: 1.2; margin: 8px 0 16px; }
+    h2 { font-size: 23px; margin-top: 36px; }
+    .label { color: #356189; font-weight: 700; letter-spacing: .08em; font-size: 13px; }
+    .flow { max-width: 680px; margin: 24px auto; }
+    details { background: white; border: 1px solid #b7c9da; border-radius: 12px; overflow: hidden; }
+    summary { cursor: pointer; padding: 16px 20px; font-weight: 650; }
+    summary:hover { background: #edf5ff; }
+    summary:focus-visible, a:focus-visible { outline: 3px solid #1463c2; outline-offset: 3px; }
+    details[open] summary { border-bottom: 1px solid #dbe4ee; background: #edf5ff; }
+    .content { padding: 4px 20px 16px; }
+    .arrow { text-align: center; color: #356189; font-size: 25px; padding: 3px; }
+    .branches { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .outcome { border-left: 4px solid #1463c2; padding: 10px 16px; background: #e8f1fd; }
+    code { font-size: .9em; overflow-wrap: anywhere; }
+    a { color: #145ba8; }
+    li { margin: 6px 0; }
+    @media (max-width: 560px) { .branches { grid-template-columns: 1fr; } main { padding: 24px 16px; } }
+    @media print { body { background: white; } details { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="label">PLAY-API · GUIA DO PROJETO</div>
+  <h1>Da requisição à evidência</h1>
+  <p>Explore o caminho de execução dos testes de API com Playwright. Clique em cada etapa para ver sua função e os arquivos envolvidos. Também é possível usar Tab e Enter.</p>
+  <p>Este guia funciona offline. Ele explica o projeto; não executa testes nem faz chamadas às APIs.</p>
+
+  <div class="flow" aria-label="Fluxo de execução dos testes">
+    <details open>
+      <summary>1. Iniciar a execução</summary>
+      <div class="content"><p>No terminal, <code>npm test</code> chama o Playwright pelo script do <code>package.json</code>.</p><p>No GitHub, <code>.github/workflows/playwright.yml</code> instala as dependências e executa os testes em pushes e pull requests para main ou master.</p></div>
+    </details>
+    <div class="arrow" aria-hidden="true">↓</div>
+    <details>
+      <summary>2. Carregar a configuração</summary>
+      <div class="content"><p><code>playwright.config.js</code> define a pasta <code>tests/</code>, a URL base do Restful Booker e o relatório HTML.</p><p>Hoje, os 10 cenários são repetidos em chromium, firefox e webkit: 30 execuções. Para uma execução de cada cenário, use <code>npm test -- --project=chromium --workers=1</code>.</p><p>No CI há um worker, até duas novas tentativas por falha e bloqueio de <code>test.only</code>.</p></div>
+    </details>
+    <div class="arrow" aria-hidden="true">↓</div>
+    <details>
+      <summary>3. Selecionar os cenários em tests/</summary>
+      <div class="content"><ul>
+        <li><code>consultar-reservas.spec.js</code>: 3 cenários de consulta (CT01–CT03).</li>
+        <li><code>criar-reserva.spec.js</code>: 2 cenários de criação (CT04–CT05).</li>
+        <li><code>dummyjson.spec.js</code>: 1 cenário de produto (CT06).</li>
+        <li><code>example.spec.js</code>: 4 exemplos de consulta (CT07–CT10).</li>
+      </ul><p>Esses IDs são referências da <a href="cenarios-bdd.md">documentação BDD</a>. Cada cenário é independente; a ordem acima é apenas uma organização didática.</p></div>
+    </details>
+    <div class="arrow" aria-hidden="true">↓</div>
+    <details>
+      <summary>4. Preparar dados e enviar a requisição</summary>
+      <div class="content"><p>A fixture <code>request</code> envia GET ou POST diretamente por HTTP. Os testes não abrem páginas no navegador.</p><p>O CT02 cria uma reserva e usa o ID retornado na consulta. Outros cenários ainda dependem dos IDs fixos 1 e 695.</p></div>
+    </details>
+    <div class="arrow" aria-hidden="true">↓ para a API usada pelo cenário</div>
+    <div class="branches">
+      <details>
+        <summary>Restful Booker</summary>
+        <div class="content"><p><code>GET /booking</code><br><code>GET /booking/{id}</code><br><code>POST /booking</code></p><p>A URL base está na configuração. As reservas criadas ainda não são removidas.</p></div>
+      </details>
+      <details>
+        <summary>DummyJSON</summary>
+        <div class="content"><p><code>GET /products/1</code></p><p>A URL completa é montada no próprio teste de produto.</p></div>
+      </details>
+    </div>
+    <div class="arrow" aria-hidden="true">↓ resposta HTTP</div>
+    <details>
+      <summary>5. Validar status e content-type</summary>
+      <div class="content"><p>Os cenários atuais esperam status <code>200</code> e content-type contendo <code>application/json</code>.</p><p>Essas verificações acontecem antes de ler o corpo como JSON. Se falharem, o teste para nesse ponto. O CT07 termina suas validações aqui.</p></div>
+    </details>
+    <div class="arrow" aria-hidden="true">↓ quando o cenário valida o corpo</div>
+    <details>
+      <summary>6. Ler o JSON e verificar os dados</summary>
+      <div class="content"><p><code>response.json()</code> transforma a resposta em dados JavaScript. As asserções verificam listas, campos, tipos ou igualdade com o conteúdo enviado, conforme o cenário.</p><p>Por exemplo: CT03 verifica presença de campos; CT08 verifica tipos; CT02 compara a reserva consultada com os dados da criação.</p></div>
+    </details>
+    <div class="arrow" aria-hidden="true">↓ resultado das verificações</div>
+    <div class="branches">
+      <div class="outcome"><strong>Passou</strong><br>Todas as verificações do cenário foram atendidas.</div>
+      <div class="outcome"><strong>Falhou</strong><br>Uma verificação ou requisição apresentou erro. Consulte os detalhes no relatório.</div>
+    </div>
+    <div class="arrow" aria-hidden="true">↓</div>
+    <details>
+      <summary>7. Consultar logs e relatório</summary>
+      <div class="content"><p>O terminal mostra resumos. Alguns testes adicionam corpos ou headers como anexos JSON ao longo da execução; a disponibilidade depende de quais etapas foram alcançadas.</p><p><code>npm run report</code> abre o relatório de <code>playwright-report/</code>. No GitHub Actions, o workflow está configurado para guardar esse relatório como artefato por 30 dias.</p></div>
+    </details>
+  </div>
+
+  <h2>Onde continuar a leitura</h2>
+  <ul>
+    <li><a href="cenarios-bdd.md">Cenários BDD em português</a> — contexto, ação e resultado esperado para cada teste.</li>
+    <li><a href="../README.md">README</a> — instalação, comandos e próximos estudos.</li>
+  </ul>
+  <p>Os links Markdown podem abrir como texto ou download no navegador. Para leitura formatada, use a prévia do editor ou o GitHub. Quando o projeto evoluir, atualize este guia junto com os cenários.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "playwright-api-tests",
+  "version": "1.0.0",
+  "description": "Projeto de estudo de testes de API com Playwright, Restful Booker e DummyJSON.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:list": "playwright test --list",
+    "report": "playwright show-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.5.2"
+  }
+}
