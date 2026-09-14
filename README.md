@@ -1,6 +1,16 @@
 # playwright-api-tests
 
+[![Playwright Tests](https://github.com/fernandoho93/playwright-api-tests/actions/workflows/playwright.yml/badge.svg)](https://github.com/fernandoho93/playwright-api-tests/actions/workflows/playwright.yml)
+
 Projeto de estudo em JavaScript para praticar requisições HTTP e validações de respostas com Playwright. Os testes verificam status, content-type e dados retornados pelas APIs.
+
+## Visão geral
+
+- **Stack:** JavaScript, Playwright Test e npm.
+- **Cobertura:** 10 cenários de consulta e criação de reservas e consulta de produto.
+- **Documentação:** cenários BDD em português e fluxograma interativo.
+- **Evidências:** relatório HTML e anexos JSON por teste.
+- **CI:** execução no GitHub Actions a cada push ou pull request para `main` ou `master`.
 
 ## Instalação
 
@@ -8,6 +18,8 @@ Tenha Node.js e npm instalados. O projeto foi validado com Node.js 24.
 Na pasta do projeto, instale as dependências:
 
 ```bash
+git clone https://github.com/fernandoho93/playwright-api-tests.git
+cd playwright-api-tests
 npm ci
 ```
 
@@ -45,6 +57,8 @@ As APIs são públicas e precisam de acesso à internet. Alguns testes consultam
 
 ## Logs e relatório
 
+No GitHub, abra a aba [Actions](https://github.com/fernandoho93/playwright-api-tests/actions), selecione uma execução e consulte os logs. Quando disponibilizado pelo workflow, o artefato `playwright-report` contém o relatório HTML para baixar e abrir localmente.
+
 O terminal mostra resumos, como status, ID e quantidade de reservas. Os detalhes que antes eram impressos como corpos completos ficam em anexos JSON no relatório HTML.
 
 Após executar os testes, use `npm run report`, abra um teste e procure seus anexos (Attachments). As pastas de resultados e relatórios são ignoradas pelo Git.
@@ -61,3 +75,5 @@ Após executar os testes, use `npm run report`, abra um teste e procure seus ane
 - Atualizar reservas com PUT e PATCH.
 - Excluir reservas e limpar os dados criados pelos testes.
 - Adicionar cenários negativos, como consulta de reserva inexistente.
+
+[Voltar ao portfólio](https://github.com/fernandoho93)
