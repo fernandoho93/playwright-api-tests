@@ -55,6 +55,42 @@ Os arquivos ficam em `tests/`. A configuração fica em `playwright.config.js` e
 
 As APIs são públicas e precisam de acesso à internet. Alguns testes consultam os IDs fixos 1 e 695 do Restful Booker e dependem de essas reservas existirem. Os testes de criação ainda não removem as reservas ao terminar.
 
+## Mapa visual da cobertura
+
+O grafo abaixo relaciona as APIs e operações aos 10 cenários automatizados. Cada cenário é executado uma vez por projeto configurado no Playwright; atualmente, Chromium, Firefox e WebKit totalizam 30 execuções no comando padrão.
+
+```mermaid
+flowchart LR
+  RB[Restful Booker] --> LIST[GET /booking]
+  RB --> GET[GET /booking/:id]
+  RB --> POST[POST /booking]
+  DJ[DummyJSON] --> PRODUCT[GET /products/1]
+
+  LIST --> CT01[CT01<br/>Lista e IDs válidos e únicos]
+  LIST --> CT10[CT10<br/>Resposta é uma lista]
+
+  POST --> CT04[CT04<br/>Cria reserva de Fernando]
+  POST --> CT05[CT05<br/>Cria reserva de Sally]
+  POST --> CT02[CT02<br/>Cria e recupera pelo novo ID]
+
+  GET --> CT02
+  GET --> CT03[CT03<br/>Campos da reserva 695]
+  GET --> CT07[CT07<br/>Status e content-type]
+  GET --> CT08[CT08<br/>Contrato e tipos dos campos]
+  GET --> CT09[CT09<br/>Nomes, preço e formato das datas]
+
+  PRODUCT --> CT06[CT06<br/>Contrato básico do produto 1]
+
+  classDef api fill:#e8f1fd,stroke:#1463c2,color:#172b43,stroke-width:2px;
+  classDef endpoint fill:#f4f7fb,stroke:#6b8299,color:#172b43;
+  classDef test fill:#ffffff,stroke:#3a8f5b,color:#172b43;
+  class RB,DJ api;
+  class LIST,GET,POST,PRODUCT endpoint;
+  class CT01,CT02,CT03,CT04,CT05,CT06,CT07,CT08,CT09,CT10 test;
+```
+
+Os detalhes de contexto, ação e resultado esperado de cada CT estão nos [cenários em BDD](docs/cenarios-bdd.md). O grafo representa a cobertura implementada no código, enquanto o relatório HTML registra o resultado de cada execução.
+
 ## Logs e relatório
 
 No GitHub, abra a aba [Actions](https://github.com/fernandoho93/playwright-api-tests/actions), selecione uma execução e consulte os logs. Quando disponibilizado pelo workflow, o artefato `playwright-report` contém o relatório HTML para baixar e abrir localmente.
